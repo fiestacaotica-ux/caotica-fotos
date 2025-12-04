@@ -92,33 +92,70 @@
       document.getElementById("preview").src = URL.createObjectURL(selectedFile);
     }
 
-    function uploadPhoto() {
-      if (!selectedFile) {
-        alert("Elegí una foto primero.");
-        return;
-      }
+   function uploadPhoto() {
+  if (!selectedFile) {
+    alert("Elegí una foto primero.");
+    return;
+  }
 
-      if (!userEmail) {
-        alert("Iniciá sesión con Google primero.");
-        return;
-      }
+  if (!userEmail) {
+    alert("Iniciá sesión con Google primero.");
+    return;
+  }
 
-      let reader = new FileReader();
-      reader.onload = function(e) {
+  let reader = new FileReader();
+  reader.onload = function(e) {
+    let img = new Image();
+    img.src = e.target.result;
+
+    img.onload = function () {
+      let canvas = document.getElementById("canvas");
+      let ctx = canvas.getContext("2d");
+
+      // Canvas del tamaño de la foto
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Dibujar la foto
+      ctx.drawImage(img, 0, 0);
+
+      // Cargar logo
+      let logo = new Image();
+      logo.src = "Logo_Mesa de trabajo 1.png"; 
+
+      logo.onload = function () {
+        // Tamaño del logo (más pequeño)
+        let logoWidth = img.width * 0.25; 
+        let logoHeight = logo.height * (logoWidth / logo.width);
+
+        // Posición centrada abajo
+        let x = (img.width - logoWidth) / 2;
+        let y = img.height - logoHeight - 20;
+
+        ctx.drawImage(logo, x, y, logoWidth, logoHeight);
+
+        // Convertir canvas final a imagen
+        let finalImage = canvas.toDataURL("image/jpeg", 0.9);
+
+        // Enviar al Apps Script
         fetch("https://script.google.com/macros/s/AKfycbweajPURdnOI-5UeH5SYQOOez1hrDgrYGm8dE7TNL_DbcFKiBOFlXNv0PBxLYu2pyc/exec", {
           method: "POST",
           body: JSON.stringify({
             filename: userEmail + "_" + Date.now() + ".jpg",
-            file: e.target.result
+            file: finalImage
           })
         })
         .then(r => r.text())
         .then(res => {
-          alert("Foto subida ⚡️\n¡Gracias por participar!");
+          alert("Foto subida con logo ⚡️🎉");
         });
       };
-      reader.readAsDataURL(selectedFile);
-    }
+    };
+  };
+
+  reader.readAsDataURL(selectedFile);
+}
+
   </script>
 <canvas id="canvas" style="display:none;"></canvas>
 
